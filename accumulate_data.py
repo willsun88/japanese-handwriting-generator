@@ -22,11 +22,20 @@ y_data = []
 for folder in sub_folders:
     print(folder)
     images = glob.glob(absPath + "/data/" + dataset + "/" + folder + "/*.png")
+
+    # Open the text image
+    true_img = Image.open(absPath + "/data/" + dataset + "/" + folder + "/true.png")
+    true_arr = np.asarray(true_img)
+    true_img.close()
     for f in images:
-        true_img = np.asarray(Image.open(absPath + "/data/" + dataset + "/" + folder + "/true.png"))
+        # Open and save the image if it isn't the text image
         if "true" not in f:
-            y_data.append(np.asarray(Image.open(f).convert('RGB')))
-            x_data.append(true_img)
+            curr_img = Image.open(f).convert('RGB')
+            y_data.append(np.asarray(curr_img))
+            x_data.append(true_arr)
+            curr_img.close()
+
+# Convert to np arrays
 x_data = np.array(x_data)
 y_data = np.array(y_data)
 print(x_data.shape, y_data.shape)
