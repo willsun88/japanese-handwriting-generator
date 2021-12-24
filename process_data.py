@@ -32,6 +32,7 @@ def get_data():
     # Return it wrapped in a kanji dataset
     return KanjiDataset(x_data, y_data)
 
+# A short common sense test if running this file
 if __name__ == "__main__":
     data = get_data()
     print(data.x_images.shape, data.y_images.shape)

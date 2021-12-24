@@ -40,6 +40,7 @@ x_data = np.array(x_data)
 y_data = np.array(y_data)
 print(x_data.shape, y_data.shape)
 
+# Save to file
 with open(absPath + "/data/data.npy", 'wb') as f:
     np.save(f, x_data)
     np.save(f, y_data)
