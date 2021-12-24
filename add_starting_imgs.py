@@ -3,7 +3,7 @@ import random
 import os
 
 # Our data
-dataset = "ETL9G"
+dataset = "ETL8G"
 
 # Get curr path
 absPath, _ = os.path.split(os.path.abspath(__file__))
@@ -23,7 +23,7 @@ sub_folders = []
 for dir, sub_dirs, files in os.walk(absPath+"/data/" + dataset):
     sub_folders.extend(sub_dirs)
 
-# Generate and save all the text images (true label)
+# Generate and save all the text images
 for folder in sub_folders:
     with open(absPath + "/data/" + dataset + "/" + folder + "/.char.txt") as f:
         a = f.readlines()
