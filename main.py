@@ -6,6 +6,15 @@ from torch.utils.data import DataLoader, Dataset
 from torch.autograd import Variable
 import argparse
 
+from model import Pix2PixModel
+
+# Run the training procedure
+def train(model, data):
+    pass
+
+# Run the generation procedure
+def generate(model):
+    pass
 
 
 if __name__ == "__main__":
@@ -15,8 +24,13 @@ if __name__ == "__main__":
     parser.add_argument("--gen", action="store_true")
     args = parser.parse_args()
 
+    # Create the model
+    model = Pix2PixModel()
+
     if args.train:
         pass
+        if args.gen:
+            pass
     elif args.gen:
         pass
     else:

@@ -64,7 +64,7 @@ class Generator(nn.Module):
     def __init__(self, in_channels, out_channels):
         super().__init__()
 
-        # Downsample convolutions as defined in the paper
+        # Encoder structure as defined in the paper
         self.encoders = [
             DownSampleBlock(in_channels, 64, batchnorm=False), 
             DownSampleBlock(64, 128), 
@@ -76,7 +76,7 @@ class Generator(nn.Module):
             DownSampleBlock(512, 512, batchnorm=False)
         ]
 
-        # Upsample convolutions as defined in the paper
+        # Decoder structure as defined in the paper
         self.decoders = [
             UpSampleBlock(512, 512, dropout=True),
             UpSampleBlock(1024, 512, dropout=True),
@@ -128,3 +128,38 @@ class Discriminator(nn.Module):
         for block in self.model:
             x = self.block(x)
         return self.out(x)
+
+class Pix2PixModel(object):
+    """
+    Class that represents the whole model. Includes loss and generation.
+    """
+    def __init__(self, in_channels, out_channels, learning_rate=0.0002, lambda_recon=200, device=None):
+        if device==None:
+            self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        else:
+            self.device = device
+        
+        self.gen = Generator(in_channels, out_channels)
+        self.discrim = Discriminator(in_channels + out_channels)
+
+        # Initialize weights
+        self.gen = self.gen.apply(Pix2PixModel.weights_init)
+        self.discrim = self.discrim.apply(Pix2PixModel.weights_init)
+
+        # Initialize loss calculations
+        self.adversarial_criterion = nn.BCEWithLogitsLoss()
+        self.recon_criterion = nn.L1Loss()
+    
+    
+    def weights_init(m):
+        # Initialize weights as defined in the paper
+        if isinstance(m, (nn.Conv2d, nn.ConvTranspose2d)):
+            torch.nn.init.normal_(m.weight, 0.0, 0.02)
+        if isinstance(m, nn.BatchNorm2d):
+            torch.nn.init.normal_(m.weight, 0.0, 0.02)
+            torch.nn.init.constant_(m.bias, 0)
+    
+    def call(self, cond):
+        gen_out = self.gen(conditioned_images)
+        disc_out = self.patch_gan(fake_images, conditioned_images)
+
