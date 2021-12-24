@@ -1,0 +1,13 @@
+# Compressed data file
+data.npy
+
+# Pre-compressed Data Folders
+ETL1/
+ETL2/
+ETL3/
+ETL4/
+ETL5/
+ETL6/
+ETL7/
+ETL8G/
+ETL9G/
