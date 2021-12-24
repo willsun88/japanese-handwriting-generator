@@ -1,3 +1,4 @@
+import torch
 import torch.nn as nn
 
 class UpSampleBlock(nn.Module):
@@ -66,14 +67,14 @@ class Generator(nn.Module):
 
         # Encoder structure as defined in the paper
         self.encoders = [
-            DownSampleBlock(in_channels, 64, batchnorm=False), 
+            DownSampleBlock(in_channels, 64, norm=False), 
             DownSampleBlock(64, 128), 
             DownSampleBlock(128, 256),
             DownSampleBlock(256, 512),
             DownSampleBlock(512, 512),
             DownSampleBlock(512, 512), 
             DownSampleBlock(512, 512),
-            DownSampleBlock(512, 512, batchnorm=False)
+            DownSampleBlock(512, 512, norm=False)
         ]
 
         # Decoder structure as defined in the paper
@@ -116,7 +117,7 @@ class Discriminator(nn.Module):
     def __init__(self, input_channels):
         super().__init__()
         self.model = [
-            DownSampleBlock(input_channels, 64, batchnorm=False),
+            DownSampleBlock(input_channels, 64, norm=False),
             DownSampleBlock(64, 128),
             DownSampleBlock(128, 256),
             DownSampleBlock(256, 512)
@@ -133,12 +134,12 @@ class Pix2PixModel(object):
     """
     Class that represents the whole model. Includes loss and generation.
     """
-    def __init__(self, in_channels, out_channels, learning_rate=0.0002, lambda_recon=200, device=None):
+    def __init__(self, in_channels, out_channels, lambda_recon=200, device=None):
         if device==None:
             self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         else:
             self.device = device
-        
+
         self.lambda_recon = lambda_recon
         self.gen = Generator(in_channels, out_channels)
         self.discrim = Discriminator(in_channels + out_channels)
@@ -146,6 +147,10 @@ class Pix2PixModel(object):
         # Initialize weights
         self.gen = self.gen.apply(Pix2PixModel.weights_init)
         self.discrim = self.discrim.apply(Pix2PixModel.weights_init)
+
+        # Move models to device
+        self.gen.to(device)
+        self.discrim.to(device)
 
         # Initialize loss calculations
         self.adversarial_criterion = nn.BCEWithLogitsLoss()
