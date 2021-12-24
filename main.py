@@ -9,8 +9,16 @@ import argparse
 from model import Pix2PixModel
 
 # Run the training procedure
-def train(model, data):
-    pass
+def train(model, train_data, num_epochs = 100, batch_size = 128):
+    optimizer.zero_grad()
+    loss.backward()
+    optimizer.step()
+
+# Run trained model on test data
+def test(model, test_data):
+    optimizer.zero_grad()
+    loss.backward()
+    optimizer.step()
 
 # Run the generation procedure
 def generate(model):

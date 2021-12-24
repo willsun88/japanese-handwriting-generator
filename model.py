@@ -139,6 +139,7 @@ class Pix2PixModel(object):
         else:
             self.device = device
         
+        self.lambda_recon = lambda_recon
         self.gen = Generator(in_channels, out_channels)
         self.discrim = Discriminator(in_channels + out_channels)
 
@@ -159,7 +160,25 @@ class Pix2PixModel(object):
             torch.nn.init.normal_(m.weight, 0.0, 0.02)
             torch.nn.init.constant_(m.bias, 0)
     
-    def call(self, cond):
-        gen_out = self.gen(conditioned_images)
-        disc_out = self.patch_gan(fake_images, conditioned_images)
+    def call(self, cond_inp, is_train=True):
+        gen_out = self.gen(cond_inp)
+        if is_train:
+            disc_out = self.discrim(gen_out, cond_inp)
+            return gen_out, disc_out
+        else:
+            return gen_out
+
+    def gen_loss(self, gen_out, disc_out, true_images):
+        adversarial_loss = self.adversarial_criterion(disc_out, torch.ones_like(disc_out))
+        recon_loss = self.recon_criterion(gen_out, true_images)
+
+        return adversarial_loss + self.lambda_recon*recon_loss
+
+    def discrim_loss(self, gen_out, disc_out, true_images):
+        true_out = self.discrim(true_images, cond_inp)
+        true_loss = self.adversarial_criterion(disc_out, torch.ones_like(disc_out))
+        gen_loss = self.adversarial_criterion(true_out, torch.ones_like(true_out))
+
+        return (gen_loss + true_loss)/2
+
 
