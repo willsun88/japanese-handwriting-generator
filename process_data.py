@@ -39,6 +39,10 @@ def get_data():
     y_data = y_data[shuffle_indices].reshape(
         (y_data.shape[0], 1, y_data.shape[1], y_data.shape[2]))
 
+    # Pad data to get 128x128, for convenience
+    x_data = np.pad(x_data, ((0, 0), (0, 0), (0, 1), (0, 0)), 'constant', constant_values=1.0)
+    y_data = np.pad(y_data, ((0, 0), (0, 0), (0, 1), (0, 0)), 'constant', constant_values=1.0)
+
     # Return data wrapped in a kanji dataset
     return KanjiDataset(x_data, y_data)
 
@@ -56,11 +60,11 @@ if __name__ == "__main__":
     figure.add_subplot(1, 2, 1)
     plt.title("Text Image")
     plt.axis("off")
-    plt.imshow(im, cmap="gray")
+    plt.imshow(im[0] * 255, cmap="gray")
 
     figure.add_subplot(1, 2, 2)
     plt.title("Handwritten Image")
     plt.axis("off")
-    plt.imshow(label, cmap="gray")
+    plt.imshow(label[0] * 255, cmap="gray")
 
     plt.show()

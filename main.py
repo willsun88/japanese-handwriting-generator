@@ -4,6 +4,7 @@ import torch.nn as nn
 import torch.utils
 from torch.utils.data import DataLoader, Dataset
 from torch.autograd import Variable
+import matplotlib.pyplot as plt
 import argparse
 
 from model import Pix2PixModel
@@ -21,28 +22,42 @@ def train(model, train_data, num_epochs = 100, batch_size = 128, learning_rate=0
     
     # Training iterations
     train_dataloader = DataLoader(train_data, batch_size=batch_size, shuffle=True)
+    num_batches = len(train_dataloader)
+    steps = []
+    gen_losses = []
+    discrim_losses = []
     for epoch in range(num_epochs):
         for i, data in enumerate(train_dataloader):
             # Call the model
             inputs, labels = data[0].to(device), data[1].to(device)
             gen_out, disc_out = model.call(inputs)
 
-            # Get losses
+            # Get losses, append them
             gen_loss = model.gen_loss(gen_out, disc_out, labels)
-            discrim_loss = model.discrim_loss(gen_out, disc_out, labels)
+            discrim_loss = model.discrim_loss(gen_out, disc_out, inputs, labels)
             print(epoch, i, gen_loss.data.item(), discrim_loss.data.item())
+            steps.append((epoch * num_batches) + i)
+            gen_losses.append(gen_loss.data.item())
+            discrim_losses.append(discrim_loss.data.item())
 
-            # Optimize generator loss
+            # Optimize generator loss and discriminator loss
             gen_optimizer.zero_grad()
-            gen_loss.backward()
-            gen_optimizer.step()
-
-            # Optimize discriminator loss
             discrim_optimizer.zero_grad()
+            gen_loss.backward(retain_graph=True)
             discrim_loss.backward()
+            gen_optimizer.step()
             discrim_optimizer.step()
+            
+        
+        graph_losses(steps, gen_losses, discrim_losses)
     
     return model
+
+# Graph losses
+def graph_losses(steps, gen_losses, discrim_losses):
+    plt.plot(steps, gen_losses)
+    plt.plot(steps, discrim_losses)
+    plt.show()
 
 # Run the generation procedure
 def generate(model):
@@ -58,12 +73,13 @@ if __name__ == "__main__":
 
     # Get device
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
-    # Create the model, get data
-    model = Pix2PixModel(1, 1, device=device)
-    train_data = get_data()
     
     if args.train:
+        # Create the model, get data
+        model = Pix2PixModel(1, 1, device=device)
+        train_data = get_data()
+
+        # Train
         model = train(model, train_data, device=device)
         if args.gen:
             pass

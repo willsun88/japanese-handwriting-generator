@@ -62,30 +62,30 @@ class Generator(nn.Module):
     """
     Implemetation of the generator. This is a U-Net model, so it includes skip connections.
     """
-    def __init__(self, in_channels, out_channels):
+    def __init__(self, in_channels, out_channels, device):
         super().__init__()
 
-        # Encoder structure as defined in the paper
+        # Encoder structure as defined in the paper, with a slight
+        # modification to match the size of our input
         self.encoders = [
-            DownSampleBlock(in_channels, 64, norm=False), 
-            DownSampleBlock(64, 128), 
-            DownSampleBlock(128, 256),
-            DownSampleBlock(256, 512),
-            DownSampleBlock(512, 512),
-            DownSampleBlock(512, 512), 
-            DownSampleBlock(512, 512),
-            DownSampleBlock(512, 512, norm=False)
+            DownSampleBlock(in_channels, 64, norm=False).to(device), 
+            DownSampleBlock(64, 128).to(device), 
+            DownSampleBlock(128, 256).to(device),
+            DownSampleBlock(256, 512).to(device),
+            DownSampleBlock(512, 512).to(device),
+            DownSampleBlock(512, 512).to(device), 
+            DownSampleBlock(512, 512, norm=False).to(device)
         ]
 
-        # Decoder structure as defined in the paper
+        # Decoder structure as defined in the paper, with a slight
+        # modification to match the size of our input
         self.decoders = [
-            UpSampleBlock(512, 512, dropout=True),
-            UpSampleBlock(1024, 512, dropout=True),
-            UpSampleBlock(1024, 512, dropout=True),
-            UpSampleBlock(1024, 512),
-            UpSampleBlock(1024, 256),
-            UpSampleBlock(512, 128),
-            UpSampleBlock(256, 64)
+            UpSampleBlock(512, 512, dropout=True).to(device),
+            UpSampleBlock(1024, 512, dropout=True).to(device),
+            UpSampleBlock(1024, 512).to(device),
+            UpSampleBlock(1024, 256).to(device),
+            UpSampleBlock(512, 128).to(device),
+            UpSampleBlock(256, 64).to(device)
         ]
         self.last_conv = nn.ConvTranspose2d(64, out_channels, kernel_size=4, stride=2, padding=1)
 
@@ -114,20 +114,20 @@ class Discriminator(nn.Module):
     """
     Implemetation of the discriminator. This is a PatchGAN model.
     """
-    def __init__(self, input_channels):
+    def __init__(self, input_channels, device):
         super().__init__()
         self.model = [
-            DownSampleBlock(input_channels, 64, norm=False),
-            DownSampleBlock(64, 128),
-            DownSampleBlock(128, 256),
-            DownSampleBlock(256, 512)
+            DownSampleBlock(input_channels, 64, norm=False).to(device),
+            DownSampleBlock(64, 128).to(device),
+            DownSampleBlock(128, 256).to(device),
+            DownSampleBlock(256, 512).to(device)
         ]
         self.out = nn.Conv2d(512, 1, kernel_size=1)
 
     def forward(self, x, y):
         x = torch.cat([x, y], axis=1)
         for block in self.model:
-            x = self.block(x)
+            x = block(x)
         return self.out(x)
 
 class Pix2PixModel(object):
@@ -141,16 +141,16 @@ class Pix2PixModel(object):
             self.device = device
 
         self.lambda_recon = lambda_recon
-        self.gen = Generator(in_channels, out_channels)
-        self.discrim = Discriminator(in_channels + out_channels)
+        self.gen = Generator(in_channels, out_channels, device=self.device)
+        self.discrim = Discriminator(in_channels + out_channels, device=self.device)
 
         # Initialize weights
         self.gen = self.gen.apply(Pix2PixModel.weights_init)
         self.discrim = self.discrim.apply(Pix2PixModel.weights_init)
 
         # Move models to device
-        self.gen.to(device)
-        self.discrim.to(device)
+        self.gen.to(self.device)
+        self.discrim.to(self.device)
 
         # Initialize loss calculations
         self.adversarial_criterion = nn.BCEWithLogitsLoss()
@@ -179,7 +179,7 @@ class Pix2PixModel(object):
 
         return adversarial_loss + self.lambda_recon*recon_loss
 
-    def discrim_loss(self, gen_out, disc_out, true_images):
+    def discrim_loss(self, gen_out, disc_out, cond_inp, true_images):
         true_out = self.discrim(true_images, cond_inp)
         true_loss = self.adversarial_criterion(disc_out, torch.ones_like(disc_out))
         gen_loss = self.adversarial_criterion(true_out, torch.ones_like(true_out))
