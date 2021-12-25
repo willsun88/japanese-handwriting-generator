@@ -13,7 +13,7 @@ from process_data import get_data
 
 # Run the training procedure
 def train(model, train_data, num_epochs = 10, batch_size = 128, learning_rate=0.0002, 
-         device=None, gen=False):
+         device=None, gen=False, visualize=True):
     # Check device
     if device==None:
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -52,6 +52,8 @@ def train(model, train_data, num_epochs = 10, batch_size = 128, learning_rate=0.
         
         if gen:
             generate(model, train_data, device=device)
+    
+    if visualize:
         graph_losses(steps, gen_losses, discrim_losses)
     
     return model
@@ -105,6 +107,7 @@ if __name__ == "__main__":
     # Check the arguments for training or generating
     parser = argparse.ArgumentParser()
     parser.add_argument("--train", action="store_true")
+    parser.add_argument("--load", action="store_true")
     parser.add_argument("--gen", action="store_true")
     args = parser.parse_args()
 
@@ -114,6 +117,8 @@ if __name__ == "__main__":
     if args.train:
         # Create the model, get data
         model = Pix2PixModel(1, 1, device=device)
+        if args.load:
+            model.load_model("checkpoint")
         train_data = get_data()
 
         # Train
@@ -125,7 +130,8 @@ if __name__ == "__main__":
     elif args.gen:
         # Create and load the model, get data
         model = Pix2PixModel(1, 1, device=device)
-        model.load_model("checkpoint")
+        if args.load:
+            model.load_model("checkpoint")
         train_data = get_data()
 
         # Generate
