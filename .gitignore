@@ -133,3 +133,6 @@ TakaoGothic.ttf
 
 # saved weights
 checkpoint
+
+# test file
+test.py

@@ -122,7 +122,7 @@ if __name__ == "__main__":
         train_data = get_data()
 
         # Train
-        model = train(model, train_data, num_epochs=9, device=device, gen=args.gen)
+        model = train(model, train_data, num_epochs=1, device=device, gen=args.gen)
 
         # Save model
         model.save_model("checkpoint")
