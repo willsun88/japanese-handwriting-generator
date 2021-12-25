@@ -35,9 +35,9 @@ for folder in sub_folders:
             x_data.append(true_arr)
             curr_img.close()
 
-# Convert to np arrays, change to floats, and normalize
-x_data = np.array(x_data).astype(np.float32) / 255.0
-y_data = np.array(y_data).astype(np.float32) / 255.0
+# Convert to np arrays, change to floats
+x_data = np.array(x_data).astype(np.float32)
+y_data = np.array(y_data).astype(np.float32)
 print(x_data.shape, y_data.shape)
 
 # Save to file

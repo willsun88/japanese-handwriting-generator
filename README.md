@@ -11,7 +11,7 @@ The model is an implementation of a Pix2Pix neural network (Citation 1). The dat
 4. Run `python add_starting_images.py` to generate the font images.
 5. Run `python accumulate_data.py` to aggregate the data into one .npy file. (It might require 21 GB of free ram...)
 6. Run `python main.py --train` to actually train the model.
-6. Run `python main.py --gen` to generate using a trained model.
+6. Run `python main.py --gen --load` to generate using a trained model.
 
 ## Sources Used
 1. [Image-to-Image Translation with Conditional Adversarial Networks](https://arxiv.org/abs/1611.07004)

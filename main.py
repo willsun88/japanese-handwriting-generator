@@ -86,19 +86,19 @@ def generate(model, data, num_examples = 3, device=None):
         figure.add_subplot(num_examples, 3, 3*i + 1)
         plt.title("Text Image")
         plt.axis("off")
-        plt.imshow(ims[i][0] * 255, cmap="gray")
+        plt.imshow(ims[i][0], cmap="gray")
 
         figure.add_subplot(num_examples, 3, 3*i + 2)
         plt.title("Handwritten Image")
         plt.axis("off")
-        plt.imshow(labels[i][0] * 255, cmap="gray")
+        plt.imshow(labels[i][0], cmap="gray")
 
         figure.add_subplot(num_examples, 3, 3*i + 3)
         plt.title("Generated Image")
         plt.axis("off")
         inp = torch.from_numpy(im.reshape((1, 1, 128, 128))).to(device)
         gen_img = model.call(inp, is_train=False).cpu().detach().numpy()
-        plt.imshow(gen_imgs[i][0] * 255, cmap="gray")
+        plt.imshow(gen_imgs[i][0], cmap="gray")
 
     plt.show()
 
@@ -122,7 +122,7 @@ if __name__ == "__main__":
         train_data = get_data()
 
         # Train
-        model = train(model, train_data, num_epochs=1, device=device, gen=args.gen)
+        model = train(model, train_data, num_epochs=9, device=device, gen=args.gen)
 
         # Save model
         model.save_model("checkpoint")

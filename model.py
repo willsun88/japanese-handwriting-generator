@@ -145,8 +145,8 @@ class Pix2PixModel(object):
         self.discrim = Discriminator(in_channels + out_channels, device=self.device)
 
         # Initialize weights
-        self.gen = self.gen.apply(Pix2PixModel.weights_init)
-        self.discrim = self.discrim.apply(Pix2PixModel.weights_init)
+        # self.gen = self.gen.apply(Pix2PixModel.weights_init)
+        # self.discrim = self.discrim.apply(Pix2PixModel.weights_init)
 
         # Move models to device
         self.gen.to(self.device)
