@@ -186,4 +186,13 @@ class Pix2PixModel(object):
 
         return (gen_loss + true_loss)/2
 
+    def save_model(self, filename):
+        torch.save({
+            'gen_dict': self.gen.state_dict(), 
+            'discrim_dict': self.discrim.state_dict()
+        }, filename)
 
+    def load_model(self, filename):
+        weights = torch.load(filename)
+        self.gen.load_state_dict(weights['gen_dict'])
+        self.discrim.load_state_dict(weights['discrim_dict'])

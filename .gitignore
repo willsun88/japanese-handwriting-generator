@@ -130,3 +130,6 @@ dmypy.json
 
 # font
 TakaoGothic.ttf
+
+# saved weights
+checkpoint

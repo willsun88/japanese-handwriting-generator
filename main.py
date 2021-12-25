@@ -6,12 +6,14 @@ from torch.utils.data import DataLoader, Dataset
 from torch.autograd import Variable
 import matplotlib.pyplot as plt
 import argparse
+import random
 
 from model import Pix2PixModel
 from process_data import get_data
 
 # Run the training procedure
-def train(model, train_data, num_epochs = 100, batch_size = 128, learning_rate=0.0002, device=None):
+def train(model, train_data, num_epochs = 10, batch_size = 128, learning_rate=0.0002, 
+         device=None, gen=False):
     # Check device
     if device==None:
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -47,8 +49,9 @@ def train(model, train_data, num_epochs = 100, batch_size = 128, learning_rate=0
             discrim_loss.backward()
             gen_optimizer.step()
             discrim_optimizer.step()
-            
         
+        if gen:
+            generate(model, train_data, device=device)
         graph_losses(steps, gen_losses, discrim_losses)
     
     return model
@@ -60,8 +63,42 @@ def graph_losses(steps, gen_losses, discrim_losses):
     plt.show()
 
 # Run the generation procedure
-def generate(model):
-    pass
+def generate(model, data, num_examples = 3, device=None):
+    # Check device
+    if device==None:
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    
+    # Pick random num_examples condition images and generate from those
+    figure = plt.figure()
+    imgs = random.sample(range(len(data)), num_examples)
+    ims, labels, = [], []
+    for ind in imgs:
+        im, label = data[ind]
+        ims.append(im)
+        labels.append(label)
+    
+    inps = torch.from_numpy(np.array(ims).reshape((num_examples, 1, 128, 128))).to(device)
+    gen_imgs = model.call(inps, is_train=False).cpu().detach().numpy()
+
+    for i in range(num_examples):
+        figure.add_subplot(num_examples, 3, 3*i + 1)
+        plt.title("Text Image")
+        plt.axis("off")
+        plt.imshow(ims[i][0] * 255, cmap="gray")
+
+        figure.add_subplot(num_examples, 3, 3*i + 2)
+        plt.title("Handwritten Image")
+        plt.axis("off")
+        plt.imshow(labels[i][0] * 255, cmap="gray")
+
+        figure.add_subplot(num_examples, 3, 3*i + 3)
+        plt.title("Generated Image")
+        plt.axis("off")
+        inp = torch.from_numpy(im.reshape((1, 1, 128, 128))).to(device)
+        gen_img = model.call(inp, is_train=False).cpu().detach().numpy()
+        plt.imshow(gen_imgs[i][0] * 255, cmap="gray")
+
+    plt.show()
 
 
 if __name__ == "__main__":
@@ -80,11 +117,20 @@ if __name__ == "__main__":
         train_data = get_data()
 
         # Train
-        model = train(model, train_data, device=device)
-        if args.gen:
-            pass
+        model = train(model, train_data, num_epochs=1, device=device, gen=args.gen)
+
+        # Save model
+        model.save_model("checkpoint")
+        
     elif args.gen:
-        pass
+        # Create and load the model, get data
+        model = Pix2PixModel(1, 1, device=device)
+        model.load_model("checkpoint")
+        train_data = get_data()
+
+        # Generate
+        generate(model, train_data, device=device)
+
     else:
         print("Must either include the --train or --gen flag!")
         exit()
