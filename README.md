@@ -13,6 +13,9 @@ The model is an implementation of a Pix2Pix neural network (Citation 1). The dat
 6. Run `python main.py --train` to actually train the model.
 6. Run `python main.py --gen --load` to generate using a trained model.
 
+## Results (WIP)
+![Progress on 8 epochs](Figure_Y.png)
+
 ## Sources Used
 1. [Image-to-Image Translation with Conditional Adversarial Networks](https://arxiv.org/abs/1611.07004)
 2. [ETL Character Database](http://etlcdb.db.aist.go.jp/)
