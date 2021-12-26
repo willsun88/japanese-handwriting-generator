@@ -42,13 +42,15 @@ def train(model, train_data, num_epochs = 10, batch_size = 128, learning_rate=0.
             gen_losses.append(gen_loss.data.item())
             discrim_losses.append(discrim_loss.data.item())
 
-            # Optimize generator loss and discriminator loss
-            gen_optimizer.zero_grad()
-            discrim_optimizer.zero_grad()
-            gen_loss.backward(retain_graph=True)
-            discrim_loss.backward()
-            gen_optimizer.step()
-            discrim_optimizer.step()
+            # Optimize generator loss or discriminator loss
+            if i%2 == 0:
+                gen_optimizer.zero_grad()
+                gen_loss.backward()
+                gen_optimizer.step()
+            else:
+                discrim_optimizer.zero_grad()
+                discrim_loss.backward()
+                discrim_optimizer.step()
         
         if gen:
             generate(model, train_data, device=device)
@@ -122,7 +124,7 @@ if __name__ == "__main__":
         train_data = get_data()
 
         # Train
-        model = train(model, train_data, num_epochs=1, device=device, gen=args.gen)
+        model = train(model, train_data, num_epochs=4, device=device, gen=args.gen)
 
         # Save model
         model.save_model("checkpoint")

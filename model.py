@@ -71,19 +71,19 @@ class Generator(nn.Module):
             DownSampleBlock(in_channels, 64, norm=False), 
             DownSampleBlock(64, 128), 
             DownSampleBlock(128, 256),
-            DownSampleBlock(256, 512),
-            DownSampleBlock(512, 512),
-            DownSampleBlock(512, 512), 
-            DownSampleBlock(512, 512, norm=False)
+            DownSampleBlock(256, 256),
+            DownSampleBlock(256, 256),
+            DownSampleBlock(256, 256), 
+            DownSampleBlock(256, 256, norm=False)
         ]
 
         # Decoder structure as defined in the paper, with a slight
         # modification to match the size of our input
         self.decoders = [
-            UpSampleBlock(512, 512, dropout=True),
-            UpSampleBlock(1024, 512, dropout=True),
-            UpSampleBlock(1024, 512),
-            UpSampleBlock(1024, 256),
+            UpSampleBlock(256, 256, dropout=True),
+            UpSampleBlock(512, 256, dropout=True),
+            UpSampleBlock(512, 256),
+            UpSampleBlock(512, 256),
             UpSampleBlock(512, 128),
             UpSampleBlock(256, 64)
         ]
@@ -118,12 +118,10 @@ class Discriminator(nn.Module):
         super().__init__()
         self.model = [
             DownSampleBlock(input_channels, 64, norm=False),
-            DownSampleBlock(64, 128),
-            DownSampleBlock(128, 256),
-            DownSampleBlock(256, 512)
+            DownSampleBlock(64, 128)
         ]
         self.model = nn.ModuleList(self.model)
-        self.out = nn.Conv2d(512, 1, kernel_size=1)
+        self.out = nn.Conv2d(128, 1, kernel_size=1)
 
     def forward(self, x, y):
         x = torch.cat([x, y], axis=1)
