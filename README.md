@@ -14,15 +14,13 @@ The model is an implementation of a Pix2Pix neural network (Citation 1). The dat
 6. Run `python main.py --gen --load` to generate using a trained model on a set of validation data.
 
 ## Results (WIP)
-<figure>
-<img src = "epoch3.png">
-<figcaption align = "center"><b>Progress on 3 epochs</b></figcaption>
-</figure>
+| ![Epoch 3](epoch3.png) |
+|:--:|
+| <b>Progress on 3 epochs</b>|
 
-<figure>
-<img src = "epoch8.png">
-<figcaption align = "center"><b>Progress on 8 epochs</b></figcaption>
-</figure>
+| ![Epoch 8](epoch8.png) |
+|:--:|
+| <b>Progress on 8 epochs</b>|
 
 ## Sources Used
 1. [Image-to-Image Translation with Conditional Adversarial Networks](https://arxiv.org/abs/1611.07004)
