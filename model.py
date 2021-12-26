@@ -181,9 +181,9 @@ class Pix2PixModel(object):
         gen_out = self.gen(cond_inp).detach()
         disc_out = self.discrim(gen_out, cond_inp)
         true_out = self.discrim(true_images, cond_inp)
-        
-        true_loss = self.adversarial_criterion(disc_out, torch.ones_like(disc_out))
-        gen_loss = self.adversarial_criterion(true_out, torch.ones_like(true_out))
+
+        gen_loss = self.adversarial_criterion(disc_out, torch.zeros_like(disc_out))
+        true_loss = self.adversarial_criterion(true_out, torch.ones_like(true_out))
 
         return (gen_loss + true_loss)/2
 
