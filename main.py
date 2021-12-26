@@ -42,7 +42,6 @@ def train(model, train_data, validation_data, num_epochs = 10, batch_size = 128,
                 else:
                     loss = model.discrim_loss(inputs, labels)
                     print(loss.data.item())
-                    steps.append((epoch * num_batches) + i)
                     discrim_losses.append(loss.data.item())
 
                 # Optimize generator loss and/or discriminator loss
@@ -110,38 +109,41 @@ def generate(model, data, num_examples = 3, device=None):
 if __name__ == "__main__":
     # Check the arguments for training or generating
     parser = argparse.ArgumentParser()
-    parser.add_argument("--train", action="store_true")
-    parser.add_argument("--load", action="store_true")
-    parser.add_argument("--gen", action="store_true")
+    parser.add_argument("--train", type=int, nargs='?', const=5, default=None)
+    parser.add_argument("--gen", type=int, nargs='?', const=3, default=None)
+    parser.add_argument("--load", type=str, nargs='?', const="checkpoint", default=None)
+    parser.add_argument("--save", type=str, nargs='?', const="checkpoint", default=None)
     args = parser.parse_args()
 
     # Get device
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     
-    if args.train:
+    if args.train is not None:
         # Create the model, get data
         model = Pix2PixModel(1, 1, device=device)
-        if args.load:
-            model.load_model("checkpoint")
+        if args.load is not None:
+            model.load_model(args.load)
         train_data, validation_data = get_data()
 
         # Train
-        model = train(model, train_data, validation_data, num_epochs=8, device=device, gen=args.gen)
+        model = train(model, train_data, validation_data, num_epochs=args.train, device=device, gen=args.gen)
 
         # Save model
-        model.save_model("checkpoint")
+        if args.save is not None:
+            model.save_model(args.save)
         
-    elif args.gen:
+    elif args.gen is not None:
         # Create and load the model, get data
         model = Pix2PixModel(1, 1, device=device)
-        if args.load:
-            model.load_model("checkpoint")
+        if args.load is not None:
+            model.load_model(args.load)
         train_data, validation_data = get_data()
 
         # Generate
-        generate(model, validation_data, device=device)
+        generate(model, validation_data, num_examples=args.gen, device=device)
 
     else:
         print("Must either include the --train or --gen flag!")
+        print("Usage: python main.py [--train (num_epochs)] [--gen (num_examples)] [--load (filepath)] [--save (filepath)]")
         exit()
 
