@@ -80,8 +80,8 @@ def train(model, train_data, validation_data, num_epochs = 10, batch_size = 128,
                 pbar_data = []
         
         # Generate once per epoch if generate flag exists
-        if gen:
-            generate_cond(model, validation_data, device=device)
+        if gen is not None:
+            generate_cond(model, validation_data, gen, device=device)
     
     # Visualize losses at the end if visualize flag exists
     if visualize:
