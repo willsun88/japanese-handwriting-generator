@@ -13,7 +13,7 @@ from process_data import get_data
 
 # Run the training procedure
 def train(model, train_data, validation_data, num_epochs = 10, batch_size = 128, 
-         learning_rate=0.0002, prog_bar=False, device=None, gen=False, visualize=True):
+         learning_rate=0.0002, prog_bar=False, device=None, gen=False, visualize=False):
     # Check device
     if device==None:
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -42,10 +42,12 @@ def train(model, train_data, validation_data, num_epochs = 10, batch_size = 128,
             pbar, pbar_data = None, None
 
         for i, data in enumerate(train_dataloader):
+            # Run the batches twice, once to train generator
+            # and once to train discriminator
             for j in range(2):
-                # Get losses, append them
                 inputs, labels = data[0].to(device), data[1].to(device)
 
+                # Switch between generator and discriminator loss on second run of batch
                 if j%2 == 0:
                     loss = model.gen_loss(inputs, labels)
                     if pbar is not None:
@@ -72,13 +74,16 @@ def train(model, train_data, validation_data, num_epochs = 10, batch_size = 128,
                     loss.backward()
                     discrim_optimizer.step()
             
+            # Update progress bar
             if pbar is not None:
-                pbar.update(i, values=pbar_data)
+                pbar.update(i + 1, values=pbar_data)
                 pbar_data = []
         
+        # Generate once per epoch if generate flag exists
         if gen:
-            generate(model, validation_data, device=device)
+            generate_cond(model, validation_data, device=device)
     
+    # Visualize losses at the end if visualize flag exists
     if visualize:
         graph_losses(steps, gen_losses, discrim_losses)
     
@@ -91,7 +96,7 @@ def graph_losses(steps, gen_losses, discrim_losses):
     plt.show()
 
 # Run the generation procedure
-def generate(model, data, num_examples = 3, device=None):
+def generate_cond(model, data, num_examples = 3, device=None):
     # Check device
     if device==None:
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -105,9 +110,11 @@ def generate(model, data, num_examples = 3, device=None):
         ims.append(im)
         labels.append(label)
     
+    # Get generated images
     inps = torch.from_numpy(np.array(ims).reshape((num_examples, 1, 128, 128))).to(device)
-    gen_imgs = model.generate(inps).cpu().detach().numpy()
+    gen_imgs = model.generate_cond(inps).cpu().detach().numpy()
 
+    # Plot text, handwritten, and generated image for each example
     for i in range(num_examples):
         figure.add_subplot(num_examples, 3, 3*i + 1)
         plt.title("Text Image")
@@ -136,6 +143,7 @@ if __name__ == "__main__":
     parser.add_argument("--load", type=str, nargs='?', const="checkpoint", default=None)
     parser.add_argument("--save", type=str, nargs='?', const="checkpoint", default=None)
     parser.add_argument("--progbar", action="store_true")
+    parser.add_argument("--visualize", action="store_true")
     args = parser.parse_args()
 
     # Get device
@@ -150,7 +158,7 @@ if __name__ == "__main__":
 
         # Train
         model = train(model, train_data, validation_data, prog_bar=args.progbar,
-                      num_epochs=args.train, device=device, gen=args.gen)
+                      num_epochs=args.train, device=device, gen=args.gen, visualize=args.visualize)
 
         # Save model
         if args.save is not None:
@@ -164,10 +172,10 @@ if __name__ == "__main__":
         train_data, validation_data = get_data()
 
         # Generate
-        generate(model, validation_data, num_examples=args.gen, device=device)
+        generate_cond(model, validation_data, num_examples=args.gen, device=device)
 
     else:
         print("Must either include the --train or --gen flag!")
-        print("Usage: python main.py [--train (num_epochs)] [--gen (num_examples)] [--load (filepath)] [--save (filepath)]")
+        print("Usage: python main.py [--train (num_epochs)] [--gen (num_examples)] [--load (filepath)] [--save (filepath)] (--progbar) (--visualize)")
         exit()
 

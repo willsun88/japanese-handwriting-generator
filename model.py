@@ -164,7 +164,7 @@ class Pix2PixModel(object):
             torch.nn.init.normal_(m.weight, 0.0, 0.02)
             torch.nn.init.constant_(m.bias, 0)
     
-    def generate(self, cond_inp):
+    def generate_cond(self, cond_inp):
         gen_out = self.gen(cond_inp)
         return gen_out
 
