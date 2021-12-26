@@ -24,8 +24,9 @@ The model is an implementation of a Pix2Pix neural network (Citation 1). The dat
 
 | ![Discriminator Overfit](discriminator_overfit.png) |
 |:--:|
-| <b>Evidence of discriminator overfitting after too many epochs</b>|
 | <b>(orange is discriminator loss, blue is generator loss)</b>|
+|:--:|
+| <b>Evidence of discriminator overfitting after too many epochs</b>|
 
 ## Sources Used
 1. [Image-to-Image Translation with Conditional Adversarial Networks](https://arxiv.org/abs/1611.07004)
