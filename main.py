@@ -35,10 +35,11 @@ def train(model, train_data, validation_data, num_epochs = 10, batch_size = 128,
     for epoch in range(num_epochs):
         # If prog_bar, set up progress bar
         if prog_bar:
-            pbar = tf.keras.utils.Progbar(target=num_batches)
+            pbar = Progbar(target=num_batches)
+            pbar_data = []
             print(f'Epoch {epoch+1}/{num_epochs}')
         else:
-            pbar = None
+            pbar, pbar_data = None, None
 
         for i, data in enumerate(train_dataloader):
             for j in range(2):
@@ -48,7 +49,7 @@ def train(model, train_data, validation_data, num_epochs = 10, batch_size = 128,
                 if j%2 == 0:
                     loss = model.gen_loss(inputs, labels)
                     if pbar is not None:
-                        pbar.update(i, values=[("gen_loss", loss)])
+                        pbar_data.append(("gen_loss", loss.data.item()))
                     else:
                         print(epoch, i, loss.data.item(), end=' ')
                     steps.append((epoch * num_batches) + i)
@@ -56,7 +57,7 @@ def train(model, train_data, validation_data, num_epochs = 10, batch_size = 128,
                 else:
                     loss = model.discrim_loss(inputs, labels)
                     if pbar is not None:
-                        pbar.update(i, values=[("discrim_loss", loss)])
+                        pbar_data.append(("discrim_loss", loss.data.item()))
                     else:
                         print(loss.data.item())
                     discrim_losses.append(loss.data.item())
@@ -70,6 +71,10 @@ def train(model, train_data, validation_data, num_epochs = 10, batch_size = 128,
                     discrim_optimizer.zero_grad()
                     loss.backward()
                     discrim_optimizer.step()
+            
+            if pbar is not None:
+                pbar.update(i, values=pbar_data)
+                pbar_data = []
         
         if gen:
             generate(model, validation_data, device=device)
