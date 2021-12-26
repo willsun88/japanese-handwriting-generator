@@ -25,7 +25,7 @@ class KanjiDataset(Dataset):
         return self.x_images.shape[0]
 
 # Function to get the data, assuming it is stored in the right place
-def get_data():
+def get_data(train_percent = 0.90, swap=False):
     # Open compressed data
     with open('data/data.npy', 'rb') as f:
         x_data = np.load(f)
@@ -47,19 +47,30 @@ def get_data():
     x_data = x_data / 255.0
     y_data = y_data / 255.0
 
+    # Split to train and validation
+    split_idx = math.floor(len(x_data)*train_percent)
+    train_x_data = x_data[:split_idx]
+    train_y_data = y_data[:split_idx]
+    test_x_data = x_data[split_idx:]
+    test_y_data = y_data[split_idx:]
+
     # Return data wrapped in a kanji dataset
-    return KanjiDataset(x_data, y_data)
+    if not swap:
+        return KanjiDataset(train_x_data, train_y_data), KanjiDataset(test_x_data, test_y_data)
+    else:
+        return KanjiDataset(train_y_data, train_x_data), KanjiDataset(test_y_data, test_x_data)
 
 # A short common sense test if running this file
 if __name__ == "__main__":
-    data = get_data()
+    train_data, validation_data = get_data()
 
     # Print shapes
-    print(data.x_images.shape, data.y_images.shape)
+    print(train_data.x_images.shape, train_data.y_images.shape)
+    print(validation_data.x_images.shape, validation_data.y_images.shape)
 
     # Display random image/label pair
     figure = plt.figure()
-    im, label = data[random.randint(0, len(data) - 1)]
+    im, label = train_data[random.randint(0, len(train_data) - 1)]
 
     figure.add_subplot(1, 2, 1)
     plt.title("Text Image")

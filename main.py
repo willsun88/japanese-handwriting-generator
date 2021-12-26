@@ -12,8 +12,8 @@ from model import Pix2PixModel
 from process_data import get_data
 
 # Run the training procedure
-def train(model, train_data, num_epochs = 10, batch_size = 128, learning_rate=0.0002, 
-         device=None, gen=False, visualize=True):
+def train(model, train_data, validation_data, num_epochs = 10, batch_size = 128, 
+         learning_rate=0.0002, device=None, gen=False, visualize=True):
     # Check device
     if device==None:
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -30,30 +30,33 @@ def train(model, train_data, num_epochs = 10, batch_size = 128, learning_rate=0.
     discrim_losses = []
     for epoch in range(num_epochs):
         for i, data in enumerate(train_dataloader):
-            # Call the model
-            inputs, labels = data[0].to(device), data[1].to(device)
-            gen_out, disc_out = model.call(inputs)
+            for j in range(2):
+                # Get losses, append them
+                inputs, labels = data[0].to(device), data[1].to(device)
 
-            # Get losses, append them
-            gen_loss = model.gen_loss(gen_out, disc_out, labels)
-            discrim_loss = model.discrim_loss(gen_out, disc_out, inputs, labels)
-            print(epoch, i, gen_loss.data.item(), discrim_loss.data.item())
-            steps.append((epoch * num_batches) + i)
-            gen_losses.append(gen_loss.data.item())
-            discrim_losses.append(discrim_loss.data.item())
+                if j%2 == 0:
+                    loss = model.gen_loss(inputs, labels)
+                    print(epoch, i, loss.data.item(), end=' ')
+                    steps.append((epoch * num_batches) + i)
+                    gen_losses.append(loss.data.item())
+                else:
+                    loss = model.discrim_loss(inputs, labels)
+                    print(loss.data.item())
+                    steps.append((epoch * num_batches) + i)
+                    discrim_losses.append(loss.data.item())
 
-            # Optimize generator loss or discriminator loss
-            if i%2 == 0:
-                gen_optimizer.zero_grad()
-                gen_loss.backward()
-                gen_optimizer.step()
-            else:
-                discrim_optimizer.zero_grad()
-                discrim_loss.backward()
-                discrim_optimizer.step()
+                # Optimize generator loss and/or discriminator loss
+                if j%2 == 0:
+                    gen_optimizer.zero_grad()
+                    loss.backward()
+                    gen_optimizer.step()
+                else:
+                    discrim_optimizer.zero_grad()
+                    loss.backward()
+                    discrim_optimizer.step()
         
         if gen:
-            generate(model, train_data, device=device)
+            generate(model, validation_data, device=device)
     
     if visualize:
         graph_losses(steps, gen_losses, discrim_losses)
@@ -82,7 +85,7 @@ def generate(model, data, num_examples = 3, device=None):
         labels.append(label)
     
     inps = torch.from_numpy(np.array(ims).reshape((num_examples, 1, 128, 128))).to(device)
-    gen_imgs = model.call(inps, is_train=False).cpu().detach().numpy()
+    gen_imgs = model.generate(inps).cpu().detach().numpy()
 
     for i in range(num_examples):
         figure.add_subplot(num_examples, 3, 3*i + 1)
@@ -99,7 +102,6 @@ def generate(model, data, num_examples = 3, device=None):
         plt.title("Generated Image")
         plt.axis("off")
         inp = torch.from_numpy(im.reshape((1, 1, 128, 128))).to(device)
-        gen_img = model.call(inp, is_train=False).cpu().detach().numpy()
         plt.imshow(gen_imgs[i][0], cmap="gray")
 
     plt.show()
@@ -121,10 +123,10 @@ if __name__ == "__main__":
         model = Pix2PixModel(1, 1, device=device)
         if args.load:
             model.load_model("checkpoint")
-        train_data = get_data()
+        train_data, validation_data = get_data()
 
         # Train
-        model = train(model, train_data, num_epochs=4, device=device, gen=args.gen)
+        model = train(model, train_data, validation_data, num_epochs=8, device=device, gen=args.gen)
 
         # Save model
         model.save_model("checkpoint")
@@ -134,10 +136,10 @@ if __name__ == "__main__":
         model = Pix2PixModel(1, 1, device=device)
         if args.load:
             model.load_model("checkpoint")
-        train_data = get_data()
+        train_data, validation_data = get_data()
 
         # Generate
-        generate(model, train_data, device=device)
+        generate(model, validation_data, device=device)
 
     else:
         print("Must either include the --train or --gen flag!")

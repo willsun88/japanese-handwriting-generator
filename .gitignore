@@ -128,8 +128,10 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# Pytorch Lightning Logs
+# Pytorch Lightning
 lightning_logs/
+model.ckpt
+model1.ckpt
 
 # font
 TakaoGothic.ttf
