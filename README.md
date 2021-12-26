@@ -25,7 +25,6 @@ The model is an implementation of a Pix2Pix neural network (Citation 1). The dat
 | ![Discriminator Overfit](discriminator_overfit.png) |
 |:--:|
 | <b>(orange is discriminator loss, blue is generator loss)</b>|
-|:--:|
 | <b>Evidence of discriminator overfitting after too many epochs</b>|
 
 ## Sources Used
