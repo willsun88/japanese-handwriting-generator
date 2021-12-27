@@ -2,7 +2,7 @@
 A generative neural net to convert Japanese kanji into handwritten-style digits.
 
 ## Implementation Details
-The model is an implementation of a Pix2Pix neural network (Citation 1). The data is from the ETL Character Database (Citation 2), specifically ETL8G. Everything was tested on Python 3.8 with CUDA 11.3.
+The model is an implementation of a Pix2Pix neural network (Citation 1), with modified structure to match the smaller image size (256x256 in the paper, 128x128 here). The data is from the ETL Character Database (Citation 2), specifically ETL8G. Everything was tested on Python 3.8 with CUDA 11.3.
 
 ## How to use
 1. Get access to the ETL Character Database, and download ETL8.
