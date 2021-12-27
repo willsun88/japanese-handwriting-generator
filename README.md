@@ -1,5 +1,5 @@
 # Japanese Handwriting Generator
-A generative neural net to convert Japanese kanji into handwritten-style digits and generate new Japanese kanji in a handwritten style.
+A generative neural net to convert Japanese kanji into handwritten-style digits.
 
 ## Implementation Details
 The model is an implementation of a Pix2Pix neural network (Citation 1). The data is from the ETL Character Database (Citation 2), specifically ETL8G. Everything was tested on Python 3.8 with CUDA 11.3.

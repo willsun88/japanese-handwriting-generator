@@ -178,4 +178,3 @@ if __name__ == "__main__":
         print("Must either include the --train or --gen flag!")
         print("Usage: python main.py [--train (num_epochs)] [--gen (num_examples)] [--load (filepath)] [--save (filepath)] (--progbar) (--visualize)")
         exit()
-
